@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dynamic Tic Tac Toe</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script>
+    // Expose the API path for the client JS
+    const AI_ENDPOINT = "/api/ai-move";
+  </script>
+  <script src="/static/js/app.js" defer></script>
+</head>
+<body>
+  <main class="container">
+    <h1>Tic Tac Toe</h1>
+
+    <!-- Screen 1: Mode selection -->
+    <section id="modeScreen" class="screen active" aria-hidden="false">
+      <p>Select mode:</p>
+      <div class="buttons" role="group" aria-label="Mode selection">
+        <button data-mode="single" class="mode-btn">Single Player</button>
+        <button data-mode="two" class="mode-btn">Two Players</button>
+      </div>
+    </section>
+
+    <!-- Screen 2: Board size selection -->
+    <section id="sizeScreen" class="screen" aria-hidden="true">
+      <p>Select board size:</p>
+      <div class="buttons" role="group" aria-label="Board size selection">
+        <button data-size="3" class="size-btn">3 × 3</button>
+        <button data-size="5" class="size-btn">5 × 5</button>
+        <button data-size="7" class="size-btn">7 × 7</button>
+      </div>
+      <div style="margin-top:12px;">
+        <label>
+          <input type="checkbox" id="firstIsX" checked> Player X goes first
+        </label>
+      </div>
+    </section>
+
+    <!-- Screen 3: Game board -->
+    <section id="gameScreen" class="screen" aria-hidden="true">
+      <div id="status" class="status" aria-live="polite">Player X's turn</div>
+      <div class="board" id="board" role="grid" aria-label="Tic Tac Toe board"></div>
+
+      <div class="controls" style="margin-top:10px;">
+        <button id="restartAppBtn">Restart App</button>
+        <button id="playAgainBtn">Play Again</button>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
