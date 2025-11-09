@@ -130,46 +130,81 @@ document.addEventListener("DOMContentLoaded", () => {
     statusEl.innerText = text;
   }
 
-  // Ask server for AI move
+  // Local AI move (no server)
   function doAIMove() {
     // small delay to feel natural
     setTimeout(() => {
-      fetch(AI_ENDPOINT, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          board: board,
-          size: size,
-          ai_symbol: aiSymbol
-        })
-      })
-      .then(r => r.json())
-      .then(data => {
-        const idx = data.index;
-        if (idx === null || idx === undefined) {
-          // no move
-          return;
-        }
-        board[idx] = aiSymbol;
-        renderBoard();
-        if (checkWin(idx, aiSymbol)) {
-          gameOver = true;
-          updateStatus(`Computer wins!`);
-          highlightWinningCells(aiSymbol);
-          return;
-        }
-        if (board.every(v => v !== "")) {
-          gameOver = true;
-          updateStatus("Draw!");
-          return;
-        }
-        currentPlayer = (aiSymbol === "X") ? "O" : "X";
-        updateStatus(`${getPlayerName(currentPlayer)}'s turn`);
-      })
-      .catch(err => {
-        console.error("AI endpoint error:", err);
-      });
+      const idx = chooseAIMove();
+      if (idx === null || idx === undefined) {
+        return;
+      }
+      board[idx] = aiSymbol;
+      renderBoard();
+      if (checkWin(idx, aiSymbol)) {
+        gameOver = true;
+        updateStatus(`Computer wins!`);
+        highlightWinningCells(aiSymbol);
+        return;
+      }
+      if (board.every(v => v !== "")) {
+        gameOver = true;
+        updateStatus("Draw!");
+        return;
+      }
+      currentPlayer = (aiSymbol === "X") ? "O" : "X";
+      updateStatus(`${getPlayerName(currentPlayer)}'s turn`);
     }, 350);
+  }
+
+  // Heuristic AI: try win -> block -> center -> corners -> random
+  function chooseAIMove() {
+    const human = (aiSymbol === "X") ? "O" : "X";
+    const empties = [];
+    for (let i = 0; i < board.length; i++) {
+      if (board[i] === "") empties.push(i);
+    }
+    if (empties.length === 0) return null;
+
+    // 1) Win if possible
+    for (const i of empties) {
+      board[i] = aiSymbol;
+      const wins = checkWin(i, aiSymbol);
+      board[i] = "";
+      if (wins) return i;
+    }
+
+    // 2) Block opponent's winning move
+    for (const i of empties) {
+      board[i] = human;
+      const oppWins = checkWin(i, human);
+      board[i] = "";
+      if (oppWins) return i;
+    }
+
+    // 3) Take center if available
+    if (size % 2 === 1) {
+      const center = Math.floor(board.length / 2);
+      if (board[center] === "") return center;
+    }
+
+    // 4) Prefer corners
+    const corners = [];
+    const cornerCoords = [
+      [0, 0],
+      [0, size - 1],
+      [size - 1, 0],
+      [size - 1, size - 1]
+    ];
+    for (const [r, c] of cornerCoords) {
+      if (r >= 0 && r < size && c >= 0 && c < size) {
+        const idx = r * size + c;
+        if (board[idx] === "") corners.push(idx);
+      }
+    }
+    if (corners.length) return corners[Math.floor(Math.random() * corners.length)];
+
+    // 5) Otherwise pick a random empty
+    return empties[Math.floor(Math.random() * empties.length)];
   }
 
   // check if placing at lastIndex by player creates a win of length winLength

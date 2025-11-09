@@ -22,10 +22,11 @@ def ai_move():
     if not empty_indices:
         return jsonify({"index": None})
 
-    choice = random.choice(empty_indices)
+    choice = random.choice(empty_indices)   
     return jsonify({"index": choice})
 
 # Serve images from the existing 'img' folder
+
 @app.route('/img/<path:filename>')
 def serve_img(filename):
     return send_from_directory('img', filename)
